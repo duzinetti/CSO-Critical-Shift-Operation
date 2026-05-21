@@ -1,86 +1,215 @@
 from models.pedidos import *
-opc = 1
-while opc <= 6 and opc >=1 :
+from models.entregadores import *
+from validations.validations import *
 
-        print("="*50)
-        print("MENU PRINCIPAL".center(50))
-        print("="*50)
-        print("1- Cadastrar Pedidos")
-        print("2- Cadastrar de Entregadores ")
-        print("3- Atualizar Pedidos")
-        print("4- Consultar Informações")
-        print("5- Relatórios Operacionais")
-        print("6- Finalizar Sistema")
-        opc = int(input("Digite a opção desejada:"))
+pedidos = {}
+entregadores = {}
+
+PRIORIDADES = ["ALTA", "NORMAL"]
+STATUS = ["pendente", "em rota", "entregue", "cancelado"]
+VEICULOS = ["carro", "van", "moto"]
+MAX_PEDIDOS = 5
+
+
+def menu_principal():
+    print("\n" + "=" * 50)
+    print("FLUXONORTE".center(50))
+    print("=" * 50)
+    print("1 - Cadastrar")
+    print("2 - Atualizar Pedidos")
+    print("3 - Consultar Informações")
+    print("4 - Relatórios")
+    print("0 - Sair")
+
+
+def submenu_cadastro():
+    print("\n" + "=" * 50)
+    print("CADASTROS".center(50))
+    print("=" * 50)
+    print("1 - Cadastrar Pedido")
+    print("2 - Cadastrar Entregador")
+    print("0 - Voltar")
+
+
+def submenu_atualizacao():
+    print("\n" + "=" * 50)
+    print("ATUALIZAÇÃO DE PEDIDOS".center(50))
+    print("=" * 50)
+    print("1 - Alterar Status")
+    print("2 - Cancelar Pedido")
+    print("3 - Associar Entregador")
+    print("4 - Remover Entregador")
+    print("0 - Voltar")
+
+
+def submenu_consultas():
+    print("\n" + "=" * 50)
+    print("CONSULTAS".center(50))
+    print("=" * 50)
+    print("1 - Pedidos Pendentes")
+    print("2 - Pedidos Entregues")
+    print("3 - Buscar Pedido")
+    print("4 - Entregadores Disponíveis")
+    print("0 - Voltar")
+
+
+def submenu_relatorios():
+    print("\n" + "=" * 50)
+    print("RELATÓRIOS".center(50))
+    print("=" * 50)
+    print("1 - Total de Pedidos")
+    print("2 - Pedidos por Status")
+    print("3 - Pedidos Prioridade Alta")
+    print("4 - Entregador com Mais Entregas")
+    print("0 - Voltar")
+
+
+def executar_menu():
+
+    opc = ""
+
+    while opc != "0":
+
+        menu_principal()
+        opc = input("Escolha uma opção: ").strip()
 
         match opc:
-            case 1:
-                  print("-"*25,"CADASTRAR PEDIDO","-"*25)
-                  id_pedido = int(input("ID do Pedido: "))
-                  nome_cliente = input("Insira o nome do Cliente: ")
-                  endereco = input("Insira o endereço de entrega: ")
-                  print("-"*25,"PRIORIDADES","-"*25)
-                  print("1 - Entrega Normal")
-                  print("2 - Entrega Rapida")
-                  print("3 - Entrega Urgente")
-                  prioridade = int(input("Insira a prioridade: "))
-                  descricao_pedido = input("Insira a descrição do produto:")
-                  print("-"*25,"STATUS","-"*25)
-                  print("1 - Pendente")
-                  print("2 - Em rota")
-                  print("3 - Entregue")
-                  print("4 - Cancelado")
-                  status_pedido = int(input("Insira o status: "))
-                  id_entregador = int(input("Insira a identificação do entregador: "))
-                  cadastrar_pedido(id_pedido,nome_cliente,endereco,prioridade,descricao_pedido,status_pedido,id_entregador)
-            
-            case 2: 
-                print("-"*25,"CADASTRAR ENTREGADOR","-"*25)
-                id_enregador = int(input("ID do Entregador"))
-                nome_entregador = input("Insira o nome do entregador: ")
-                print("-"*25,"VEÍCULO","-"*25)
-                print("1 - Moto")
-                print("2 - Carro")
-                print("3 - Van")
-                print("4 - Caminhāo")
-                veiculo = int(input("Insira o veículo do entregador: "))
-                id_pedido_entregar = int(input("ID do pedido a ser entregue: "))
-                disponibilidade = input("Disponível ou não - True/False: ")
-                cadastrar_entregador(id_entregador,nome_entregador,veiculo,id_pedido_entregar,disponibilidade)
-            
-            case 3: 
-                print("="*50)
-                print("ATUALIZAÇÃO DOS PEDIDOS".center(50))
-                print("="*50)
-                print("1- Alterar Status do Pedido")
-                print("2- Cancelar Pedido")
-                print("3- Associar Entregadores a Pedidos")
-                print("4- Remover associação de Entregador")
+
+            case "1":
+
+                sub = ""
+
+                while sub != "0":
+
+                    submenu_cadastro()
+                    sub = input("Escolha: ").strip()
+
+                    match sub:
+
+                        case "1":
+                            cadastrar_pedido(
+                                pedidos,
+                                entregadores,
+                                PRIORIDADES
+                            )
+
+                        case "2":
+                            cadastrar_entregador(
+                                entregadores,
+                                VEICULOS
+                            )
+
+                        case "0":
+                            pass
+
+                        case _:
+                            print("[ERRO] Opção inválida.")
+
+            case "2":
+
+                sub = ""
+
+                while sub != "0":
+
+                    submenu_atualizacao()
+                    sub = input("Escolha: ").strip()
+
+                    match sub:
+
+                        case "1":
+                            alterar_status(
+                                pedidos,
+                                STATUS
+                            )
+
+                        case "2":
+                            cancelar_pedido(
+                                pedidos,
+                                entregadores
+                            )
+
+                        case "3":
+                            associar_entregador(
+                                pedidos,
+                                entregadores,
+                                MAX_PEDIDOS
+                            )
+
+                        case "4":
+                            remover_entregador(
+                                pedidos,
+                                entregadores
+                            )
+
+                        case "0":
+                            pass
+
+                        case _:
+                            print("[ERRO] Opção inválida.")
+
+            case "3":
+
+                sub = ""
+
+                while sub != "0":
+
+                    submenu_consultas()
+                    sub = input("Escolha: ").strip()
+
+                    match sub:
+
+                        case "1":
+                            pass
+
+                        case "2":
+                            pass
+
+                        case "3":
+                            pass
+
+                        case "4":
+                            pass
+
+                        case "0":
+                            pass
+
+                        case _:
+                            print("[ERRO] Opção inválida.")
+
+            case "4":
+
+                sub = ""
+
+                while sub != "0":
+
+                    submenu_relatorios()
+                    sub = input("Escolha: ").strip()
+
+                    match sub:
+
+                        case "1":
+                            pass
+
+                        case "2":
+                            pass
+
+                        case "3":
+                            pass
+
+                        case "4":
+                            pass
+
+                        case "0":
+                            pass
+
+                        case _:
+                            print("[ERRO] Opção inválida.")
+
+            case "0":
+                print("\nSistema encerrado.")
+
+            case _:
+                print("\n[ERRO] Opção inválida.")
 
 
-            case 4: 
-                print("="*50)
-                print("CONSULTAR INFORMAÇÕES".center(50))
-                print("="*50)
-                print("Pedidos Pendentes")
-                print("Pedidos Entregues")
-                print("Buscar Pedido por ID")
-                print("Entregador Disponível")
-                print("Entregas por Entregador")
-
-
-            case 5: 
-                print("="*50)
-                print("RELATÓRIOS OPERACIONAIS".center(50))
-                print("="*50)
-                print("Total de Pedidos")
-                print("Quantidade de Pedidos por Status")
-                print("Pedidos com Alta Prioridade")
-                print("Entregador com Maior Número de Entregas")
-            case 6:
-                  break
-else: 
-     print("Opção inválida!")
-
-
-
+executar_menu()
