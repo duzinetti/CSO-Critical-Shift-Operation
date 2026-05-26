@@ -1,6 +1,7 @@
 from models.pedidos import *
 from models.entregadores import *
 from validations.validations import *
+from models.consults import pedidos_pendentes, pedidos_entregues, buscar_pedido, entregadores_disponiveis
 
 pedidos = {}
 entregadores = {}
@@ -159,24 +160,16 @@ def executar_menu():
                     match sub:
 
                         case "1":
-                            pass
+                            pedidos_pendentes(pedidos)
 
                         case "2":
-                            pass
+                            pedidos_entregues(pedidos)
 
                         case "3":
-                            pass
+                            buscar_pedido(pedidos)
 
                         case "4":
-                            pass
-
-                        case "0":
-                            pass
-
-                        case _:
-                            print("[ERRO] Opção inválida.")
-
-            case "4":
+                            entregadores_disponiveis(entregadores)
 
                 sub = ""
 

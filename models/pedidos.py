@@ -1,4 +1,3 @@
-
 from validations.validations import *
 
 
@@ -39,17 +38,19 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
     if not nao_vazio(descricao, "Descrição"):
         return
 
-    id_ent = input("  ID do entregador (vazio para depois): ").strip()
+    peso_str = input("  Peso do pedido (kg, ex: 3.5): ").strip()
+    peso = peso_valido(peso_str)
+    if peso is None:
+        return
 
-    if id_ent != "":
+    fragil_inp = input("  Pedido é frágil? (s/n): ").strip().lower()
+    if fragil_inp not in ["s", "n"]:
+        print("  [ERRO] Responda s ou n.")
+        return
+    fragil = fragil_inp == "s"
 
-        if not id_entregador_valido(id_ent):
-            print("  [ERRO] ID inválido.")
-            return
-
-        if id_ent not in entregadores:
-            print("  [ERRO] Entregador não cadastrado.")
-            return
+    veiculo_ideal = veiculo_por_peso_fragilidade(peso, fragil)
+    print(f"  [INFO] Veículo ideal para este pedido: {veiculo_ideal.upper()}")
 
     pedidos[id_p] = {
         "id": id_p,
@@ -58,13 +59,27 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
         "prioridade": prioridade,
         "descricao": descricao,
         "status": "pendente",
-        "id_entregador": id_ent
+        "id_entregador": "",
+        "peso": peso,
+        "fragil": fragil,
+        "veiculo_ideal": veiculo_ideal
     }
 
-    if id_ent != "":
-        entregadores[id_ent]["pedidos"].append(id_p)
+    # Distribuição automática: entregador do veículo certo com menos pedidos ativos
+    candidatos = [
+        e for e in entregadores.values()
+        if e["veiculo"] == veiculo_ideal and e["disponivel"]
+    ]
+    candidatos.sort(key=lambda e: len(e["pedidos"]))
 
-    print(f"  [OK] Pedido {id_p} cadastrado.")
+    if candidatos:
+        escolhido = candidatos[0]
+        pedidos[id_p]["id_entregador"] = escolhido["id"]
+        escolhido["pedidos"].append(id_p)
+        print(f"  [OK] Pedido {id_p} cadastrado e distribuído para o entregador {escolhido['id']} ({veiculo_ideal}).")
+    else:
+        print(f"  [OK] Pedido {id_p} cadastrado.")
+        print(f"  [AVISO] Nenhum entregador de '{veiculo_ideal}' disponível. Associe manualmente.")
 
 
 def alterar_status(pedidos, STATUS):
@@ -121,4 +136,3 @@ def cancelar_pedido(pedidos, entregadores):
     pedidos[id_p]["id_entregador"] = ""
 
     print(f"  [OK] Pedido {id_p} cancelado.")
-
