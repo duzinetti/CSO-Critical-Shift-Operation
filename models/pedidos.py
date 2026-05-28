@@ -1,14 +1,13 @@
 from validations.validations import *
 
 
-def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
+def cadastrar_pedido(pedidos, entregadores, PRIORIDADES, stats):
 
     print("\n─── Cadastro de Pedido ───")
 
     id_p = input("  ID do pedido (1 letra + 4 números): ").strip().upper()
 
     if not id_pedido_valido(id_p):
-        print("  [ERRO] ID inválido.")
         return
 
     if id_p in pedidos:
@@ -18,6 +17,9 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
     cliente = input("  Nome do cliente: ").strip()
 
     if not nao_vazio(cliente, "Nome do cliente"):
+        return
+
+    if not so_letras(cliente, "Nome do cliente"):
         return
 
     endereco = input("  Endereço: ").strip()
@@ -30,7 +32,7 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
     prioridade = input("  Prioridade: ").strip().upper()
 
     if prioridade not in PRIORIDADES:
-        print("  [ERRO] Prioridade inválida.")
+        print("  [ERRO] Prioridade inválida. Digite ALTA ou NORMAL.")
         return
 
     descricao = input("  Descrição: ").strip()
@@ -62,10 +64,10 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
         "id_entregador": "",
         "peso": peso,
         "fragil": fragil,
-        "veiculo_ideal": veiculo_ideal
+        "veiculo_ideal": veiculo_ideal,
+        "historico": ["pendente"]
     }
 
-    # Distribuição automática: entregador do veículo certo com menos pedidos ativos
     candidatos = [
         e for e in entregadores.values()
         if e["veiculo"] == veiculo_ideal and e["disponivel"]
@@ -81,10 +83,15 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES):
         print(f"  [OK] Pedido {id_p} cadastrado.")
         print(f"  [AVISO] Nenhum entregador de '{veiculo_ideal}' disponível. Associe manualmente.")
 
+    stats["total_pedidos"] += 1
+
 
 def alterar_status(pedidos, STATUS):
 
     id_p = input("  ID do pedido: ").strip().upper()
+
+    if not id_pedido_valido(id_p):
+        return
 
     if id_p not in pedidos:
         print("  [ERRO] Pedido não encontrado.")
@@ -99,10 +106,11 @@ def alterar_status(pedidos, STATUS):
     novo = input("  Novo status: ").strip().lower()
 
     if novo not in STATUS:
-        print("  [ERRO] Status inválido.")
+        print("  [ERRO] Status inválido. Digite: pendente, em rota ou entregue.")
         return
 
     pedidos[id_p]["status"] = novo
+    pedidos[id_p]["historico"].append(novo)
 
     print(f"  [OK] Status atualizado para '{novo}'.")
 
@@ -110,6 +118,9 @@ def alterar_status(pedidos, STATUS):
 def cancelar_pedido(pedidos, entregadores):
 
     id_p = input("  ID do pedido: ").strip().upper()
+
+    if not id_pedido_valido(id_p):
+        return
 
     if id_p not in pedidos:
         print("  [ERRO] Pedido não encontrado.")
@@ -126,7 +137,14 @@ def cancelar_pedido(pedidos, entregadores):
         print(f"  [AVISO] {msgs[st]}")
         return
 
+    confirma = input(f"  Confirma o cancelamento do pedido {id_p}? (s/n): ").strip().lower()
+
+    if confirma != "s":
+        print("  [INFO] Cancelamento abortado.")
+        return
+
     pedidos[id_p]["status"] = "cancelado"
+    pedidos[id_p]["historico"].append("cancelado")
 
     id_ent = pedidos[id_p]["id_entregador"]
 

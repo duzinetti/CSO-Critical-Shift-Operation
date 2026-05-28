@@ -8,7 +8,6 @@ def cadastrar_entregador(entregadores, VEICULOS):
     id_e = input("  ID do entregador (4 dígitos): ").strip()
 
     if not id_entregador_valido(id_e):
-        print("  [ERRO] ID inválido.")
         return
 
     if id_e in entregadores:
@@ -20,12 +19,21 @@ def cadastrar_entregador(entregadores, VEICULOS):
     if not nao_vazio(nome, "Nome"):
         return
 
+    if not so_letras(nome, "Nome"):
+        return
+
+    # Validação de nome duplicado
+    for e in entregadores.values():
+        if e["nome"].lower() == nome.lower():
+            print(f"  [ERRO] Já existe um entregador com o nome '{nome}' (ID: {e['id']}).")
+            return
+
     print("  Veículos: moto, carro, van")
 
     veiculo = input("  Veículo: ").strip().lower()
 
     if veiculo not in VEICULOS:
-        print("  [ERRO] Veículo inválido.")
+        print("  [ERRO] Veículo inválido. Digite: moto, carro ou van.")
         return
 
     disp = input("  Disponível? (s/n): ").strip().lower()
@@ -45,9 +53,39 @@ def cadastrar_entregador(entregadores, VEICULOS):
     print(f"  [OK] Entregador {id_e} cadastrado.")
 
 
+def alterar_disponibilidade(entregadores):
+
+    print("\n─── Alterar Disponibilidade do Entregador ───")
+
+    id_e = input("  ID do entregador: ").strip()
+
+    if not id_entregador_valido(id_e):
+        return
+
+    if id_e not in entregadores:
+        print("  [ERRO] Entregador não encontrado.")
+        return
+
+    atual = "disponível" if entregadores[id_e]["disponivel"] else "indisponível"
+    print(f"  Status atual: {atual}")
+
+    disp = input("  Novo status disponível? (s/n): ").strip().lower()
+
+    if disp not in ["s", "n"]:
+        print("  [ERRO] Responda s ou n.")
+        return
+
+    entregadores[id_e]["disponivel"] = disp == "s"
+    novo = "disponível" if disp == "s" else "indisponível"
+    print(f"  [OK] Entregador {id_e} agora está {novo}.")
+
+
 def associar_entregador(pedidos, entregadores, MAX_PEDIDOS):
 
     id_p = input("  ID do pedido: ").strip().upper()
+
+    if not id_pedido_valido(id_p):
+        return
 
     if id_p not in pedidos:
         print("  [ERRO] Pedido não encontrado.")
@@ -60,7 +98,6 @@ def associar_entregador(pedidos, entregadores, MAX_PEDIDOS):
     id_e = input("  ID do entregador: ").strip()
 
     if not id_entregador_valido(id_e):
-        print("  [ERRO] ID inválido.")
         return
 
     if id_e not in entregadores:
@@ -100,6 +137,9 @@ def remover_entregador(pedidos, entregadores):
 
     id_p = input("  ID do pedido: ").strip().upper()
 
+    if not id_pedido_valido(id_p):
+        return
+
     if id_p not in pedidos:
         print("  [ERRO] Pedido não encontrado.")
         return
@@ -116,4 +156,3 @@ def remover_entregador(pedidos, entregadores):
     pedidos[id_p]["id_entregador"] = ""
 
     print(f"  [OK] Entregador removido do pedido {id_p}.")
-
