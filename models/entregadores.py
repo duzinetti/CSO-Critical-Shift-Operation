@@ -5,14 +5,19 @@ def cadastrar_entregador(entregadores, VEICULOS):
 
     print("\n─── Cadastro de Entregador ───")
 
-    id_e = input("  ID do entregador (4 dígitos): ").strip()
+    id_sugerido = gerar_id_entregador(entregadores)
+    print(f"  ID sugerido automaticamente: {id_sugerido}")
+    escolha = input("  Pressione ENTER para aceitar ou digite um ID personalizado (4 dígitos): ").strip().upper()
 
-    if not id_entregador_valido(id_e):
-        return
-
-    if id_e in entregadores:
-        print("  [ERRO] Entregador já cadastrado.")
-        return
+    if escolha == "":
+        id_e = id_sugerido
+    else:
+        if not id_entregador_valido(escolha):
+            return
+        if escolha in entregadores:
+            print("  [ERRO] Entregador já cadastrado.")
+            return
+        id_e = escolha
 
     nome = input("  Nome: ").strip()
 
@@ -22,14 +27,12 @@ def cadastrar_entregador(entregadores, VEICULOS):
     if not so_letras(nome, "Nome"):
         return
 
-    # Validação de nome duplicado
     for e in entregadores.values():
         if e["nome"].lower() == nome.lower():
             print(f"  [ERRO] Já existe um entregador com o nome '{nome}' (ID: {e['id']}).")
             return
 
     print("  Veículos: moto, carro, van")
-
     veiculo = input("  Veículo: ").strip().lower()
 
     if veiculo not in VEICULOS:
@@ -57,7 +60,7 @@ def alterar_disponibilidade(entregadores):
 
     print("\n─── Alterar Disponibilidade do Entregador ───")
 
-    id_e = input("  ID do entregador: ").strip()
+    id_e = input("  ID do entregador: ").strip().upper()
 
     if not id_entregador_valido(id_e):
         return
@@ -66,7 +69,11 @@ def alterar_disponibilidade(entregadores):
         print("  [ERRO] Entregador não encontrado.")
         return
 
-    atual = "disponível" if entregadores[id_e]["disponivel"] else "indisponível"
+    if entregadores[id_e]["disponivel"]:
+        atual = "disponível"
+    else:
+        atual = "indisponível"
+
     print(f"  Status atual: {atual}")
 
     disp = input("  Novo status disponível? (s/n): ").strip().lower()
@@ -76,7 +83,12 @@ def alterar_disponibilidade(entregadores):
         return
 
     entregadores[id_e]["disponivel"] = disp == "s"
-    novo = "disponível" if disp == "s" else "indisponível"
+
+    if disp == "s":
+        novo = "disponível"
+    else:
+        novo = "indisponível"
+
     print(f"  [OK] Entregador {id_e} agora está {novo}.")
 
 
@@ -95,7 +107,7 @@ def associar_entregador(pedidos, entregadores, MAX_PEDIDOS):
         print("  [AVISO] Pedido não aceita entregador.")
         return
 
-    id_e = input("  ID do entregador: ").strip()
+    id_e = input("  ID do entregador: ").strip().upper()
 
     if not id_entregador_valido(id_e):
         return
@@ -111,7 +123,6 @@ def associar_entregador(pedidos, entregadores, MAX_PEDIDOS):
     ativos = 0
 
     for p in entregadores[id_e]["pedidos"]:
-
         if pedidos[p]["status"] not in ["cancelado", "entregue"]:
             ativos += 1
 
@@ -122,12 +133,10 @@ def associar_entregador(pedidos, entregadores, MAX_PEDIDOS):
     id_atual = pedidos[id_p]["id_entregador"]
 
     if id_atual in entregadores:
-
         if id_p in entregadores[id_atual]["pedidos"]:
             entregadores[id_atual]["pedidos"].remove(id_p)
 
     pedidos[id_p]["id_entregador"] = id_e
-
     entregadores[id_e]["pedidos"].append(id_p)
 
     print(f"  [OK] Entregador {id_e} associado ao pedido {id_p}.")

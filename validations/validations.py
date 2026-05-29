@@ -58,3 +58,23 @@ def veiculo_por_peso_fragilidade(peso, fragil):
     if peso <= 20:
         return "carro"
     return "van"
+
+
+def gerar_id_pedido(pedidos):
+    """Gera o próximo ID de pedido automaticamente no formato P0001, P0002..."""
+    numero = len(pedidos) + 1
+    while True:
+        novo_id = f"P{numero:04d}"
+        if novo_id not in pedidos:
+            return novo_id
+        numero += 1
+
+
+def gerar_id_entregador(entregadores):
+    """Gera o próximo ID de entregador automaticamente no formato 0001, 0002..."""
+    numero = len(entregadores) + 1
+    while True:
+        novo_id = f"{numero:04d}"
+        if novo_id not in entregadores:
+            return novo_id
+        numero += 1

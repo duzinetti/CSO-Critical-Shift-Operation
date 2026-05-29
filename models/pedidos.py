@@ -1,18 +1,35 @@
 from validations.validations import *
 
 
+def _chave_ordenacao(p):
+    if p["prioridade"] == "ALTA":
+        prioridade_num = 0
+    else:
+        prioridade_num = 1
+    return (prioridade_num, p.get("ordem", 0))
+
+
+def _menor_fila(e):
+    return len(e["pedidos"])
+
+
 def cadastrar_pedido(pedidos, entregadores, PRIORIDADES, stats):
 
     print("\n─── Cadastro de Pedido ───")
 
-    id_p = input("  ID do pedido (1 letra + 4 números): ").strip().upper()
+    id_sugerido = gerar_id_pedido(pedidos)
+    print(f"  ID sugerido automaticamente: {id_sugerido}")
+    escolha = input("  Pressione ENTER para aceitar ou digite um ID personalizado: ").strip().upper()
 
-    if not id_pedido_valido(id_p):
-        return
-
-    if id_p in pedidos:
-        print("  [ERRO] Pedido já existe.")
-        return
+    if escolha == "":
+        id_p = id_sugerido
+    else:
+        if not id_pedido_valido(escolha):
+            return
+        if escolha in pedidos:
+            print("  [ERRO] Pedido já existe.")
+            return
+        id_p = escolha
 
     cliente = input("  Nome do cliente: ").strip()
 
@@ -28,7 +45,6 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES, stats):
         return
 
     print("  Prioridades: ALTA, NORMAL")
-
     prioridade = input("  Prioridade: ").strip().upper()
 
     if prioridade not in PRIORIDADES:
@@ -42,13 +58,16 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES, stats):
 
     peso_str = input("  Peso do pedido (kg, ex: 3.5): ").strip()
     peso = peso_valido(peso_str)
+
     if peso is None:
         return
 
     fragil_inp = input("  Pedido é frágil? (s/n): ").strip().lower()
+
     if fragil_inp not in ["s", "n"]:
         print("  [ERRO] Responda s ou n.")
         return
+
     fragil = fragil_inp == "s"
 
     veiculo_ideal = veiculo_por_peso_fragilidade(peso, fragil)
@@ -65,14 +84,17 @@ def cadastrar_pedido(pedidos, entregadores, PRIORIDADES, stats):
         "peso": peso,
         "fragil": fragil,
         "veiculo_ideal": veiculo_ideal,
-        "historico": ["pendente"]
+        "historico": ["pendente"],
+        "ordem": stats["total_pedidos"]
     }
 
-    candidatos = [
-        e for e in entregadores.values()
-        if e["veiculo"] == veiculo_ideal and e["disponivel"]
-    ]
-    candidatos.sort(key=lambda e: len(e["pedidos"]))
+    candidatos = []
+
+    for e in entregadores.values():
+        if e["veiculo"] == veiculo_ideal and e["disponivel"]:
+            candidatos.append(e)
+
+    candidatos.sort(key=_menor_fila)
 
     if candidatos:
         escolhido = candidatos[0]
@@ -102,7 +124,6 @@ def alterar_status(pedidos, STATUS):
         return
 
     print("  Status disponíveis: pendente, em rota, entregue")
-
     novo = input("  Novo status: ").strip().lower()
 
     if novo not in STATUS:
@@ -138,6 +159,10 @@ def cancelar_pedido(pedidos, entregadores):
         return
 
     confirma = input(f"  Confirma o cancelamento do pedido {id_p}? (s/n): ").strip().lower()
+
+    if confirma not in ["s", "n"]:
+        print("  [ERRO] Responda s ou n.")
+        return
 
     if confirma != "s":
         print("  [INFO] Cancelamento abortado.")
